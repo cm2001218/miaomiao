@@ -1,109 +1,97 @@
 <template>
   <div class="cinema_body">
-    <ul>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q">
-            <span class="price">22.9</span> 元起
-          </span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q">
-            <span class="price">22.9</span> 元起
-          </span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q">
-            <span class="price">22.9</span> 元起
-          </span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q">
-            <span class="price">22.9</span> 元起
-          </span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q">
-            <span class="price">22.9</span> 元起
-          </span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q">
-            <span class="price">22.9</span> 元起
-          </span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-    </ul>
+    <Loading v-if="isLoading"></Loading>
+    <Scroller v-else>
+      <ul>
+        <li v-for="(cinema, index) in cinemaList" :key="index">
+          <div>
+            <span>{{ cinema.name }}</span>
+            <span class="q">
+              <span class="price">￥{{ cinema.lowPrice | filterPrice }}</span>
+            </span>
+          </div>
+          <div class="address">
+            <span>{{ cinema.address }}</span>
+            <!-- <span>{{ cinema.Distance }}</span> -->
+          </div>
+          <div class="card">
+            <div>小吃</div>
+            <div>折扣卡</div>
+          </div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
 <script>
+// import Vue from "vue";
+// Vue.filter("filterPrice", (price) => {
+//   return (price / 100).toFixed(1);
+// });
 export default {
   name: "CiList",
+  data() {
+    return {
+      cinemaList: [],
+      isLoading: true,
+      preCityId: -1,
+    };
+  },
+  filters: {
+    filterPrice(price) {
+      return (price / 100).toFixed(1);
+    },
+    formatCard(key) {
+      var card = [
+        { key: "allowRefund", value: "改签" },
+        { key: "endorse", value: "退" },
+        { key: "sell", value: "折扣卡" },
+        { key: "snack", value: "小吃" },
+      ];
+      for (var i = 0; i < card.length; i++) {
+        if (card[i].key === key) {
+          return card[i].value;
+        }
+      }
+      return "";
+    },
+    classCard(key) {
+      var card = [
+        { key: "allowRefund", value: "bl" },
+        { key: "endorse", value: "bl" },
+        { key: "sell", value: "or" },
+        { key: "snack", value: "or" },
+      ];
+      for (var i = 0; i < card.length; i++) {
+        if (card[i].key === key) {
+          return card[i].value;
+        }
+      }
+      return "";
+    },
+  },
+  activated() {
+    let cityId = this.$store.state.city.id;
+    let name = this.$store.state.city.name;
+    if (this.preCityId === cityId) {
+      return;
+    }
+    this.isLoading = true;
+    this.axios({
+      url: `https://m.maizuo.com/gateway?cityId=${cityId}&ticketFlag=1&k=2443279`,
+      headers: {
+        "X-Client-Info":
+          '{"a":"3000","ch":"1002","v":"5.0.4","e":"15610855429195524981146"}',
+        "X-Host": "mall.film-ticket.cinema.list",
+      },
+    }).then((res) => {
+      console.log(res.data.data);
+      this.preCityId = cityId;
+      this.cinemaList = res.data.data.cinemas;
+      this.isLoading = false;
+    });
+  },
 };
 </script>
 
