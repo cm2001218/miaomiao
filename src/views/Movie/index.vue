@@ -4,12 +4,12 @@
     <div id="content">
       <div class="movie_menu">
         <router-link tag="div" to="/movie/city" class="city_name">
-          <span>大连</span>
+          <span>{{ this.$store.state.city.name }}</span>
           <i class="iconfont icon-lower-triangle"></i>
         </router-link>
         <div class="hot_swtich">
-          <router-link to="/movie/nowplaying" tag="div" class="hot_item active">正在热映</router-link>
-          <router-link to="/movie/comingsoon" tag="div" class="hot_item">即将上映</router-link>
+          <router-link to="/movie/nowplaying" tag="div" class="hot_item active">NowPlaying</router-link>
+          <router-link to="/movie/comingsoon" tag="div" class="hot_item">ComingSoon</router-link>
         </div>
         <router-link to="/movie/search" tag="div" class="search_entry">
           <i class="iconfont icon-sousuo"></i>
@@ -20,6 +20,7 @@
       </keep-alive>
     </div>
     <Tabbar></Tabbar>
+    <router-view name="detail"></router-view>
   </div>
 </template>
 
@@ -66,11 +67,11 @@ export default {
   line-height: 45px;
 }
 .movie_menu .hot_item {
-  font-size: 15px;
-  color: #666;
+  /* font-size: 15px;
+  color: #666; */
   width: 80px;
   text-align: center;
-  margin: 0 12px;
+  margin: 0 18px;
   font-weight: 700;
 }
 /* .movie_menu .hot_item.active {
@@ -100,4 +101,3 @@ export default {
   color: red;
 }
 </style>
-

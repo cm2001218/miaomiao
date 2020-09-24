@@ -2,7 +2,7 @@
   <div id="main">
     <Header title="喵喵影院"></Header>
     <div id="content">
-      <div class="cinema_menu">
+      <!-- <div class="cinema_menu">
         <div class="city_switch">
           全城
           <i class="iconfont icon-lower-triangle"></i>
@@ -15,7 +15,7 @@
           特色
           <i class="iconfont icon-lower-triangle"></i>
         </div>
-      </div>
+      </div> -->
       <CiList></CiList>
     </div>
     <Tabbar></Tabbar>
@@ -47,5 +47,3 @@ export default {
   background: white;
 }
 </style>
-
-

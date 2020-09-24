@@ -1,128 +1,135 @@
 <template>
-  <div class="city_body">
-    <div class="city_list">
-      <div class="city_hot">
-        <h2>热门城市</h2>
-        <ul class="clearfix">
-          <li>上海</li>
-          <li>北京</li>
-          <li>上海</li>
-          <li>北京</li>
-          <li>上海</li>
-          <li>北京</li>
-          <li>上海</li>
-          <li>北京</li>
-        </ul>
-      </div>
-      <div class="city_sort">
-        <div>
-          <h2>A</h2>
-          <ul>
-            <li>阿拉善盟</li>
-            <li>鞍山</li>
-            <li>安庆</li>
-            <li>安阳</li>
-          </ul>
-        </div>
-        <div>
-          <h2>B</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-            <li>蚌埠</li>
-            <li>包头</li>
-          </ul>
-        </div>
-        <div>
-          <h2>A</h2>
-          <ul>
-            <li>阿拉善盟</li>
-            <li>鞍山</li>
-            <li>安庆</li>
-            <li>安阳</li>
-          </ul>
-        </div>
-        <div>
-          <h2>B</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-            <li>蚌埠</li>
-            <li>包头</li>
-          </ul>
-        </div>
-        <div>
-          <h2>A</h2>
-          <ul>
-            <li>阿拉善盟</li>
-            <li>鞍山</li>
-            <li>安庆</li>
-            <li>安阳</li>
-          </ul>
-        </div>
-        <div>
-          <h2>B</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-            <li>蚌埠</li>
-            <li>包头</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="city_index">
+  <div>
+    <!-- <Loading v-if="isLoading" /> -->
+    <div class="city_hot">
+      <h2>Hot Cities</h2>
       <ul>
-        <li>A</li>
-        <li>B</li>
-        <li>C</li>
-        <li>D</li>
-        <li>E</li>
+        <li
+          v-for="item in hotList"
+          :key="item.cityId"
+          @click="handleToCity(item.name, item.cityId)"
+        >{{ item.name }}</li>
       </ul>
     </div>
+    <mt-index-list ref="mylist">
+      <mt-index-section :index="data.index" v-for="data in datalist" :key="data.index">
+        <div
+          v-for="city in data.list"
+          :key="city.cityId"
+          @click="handleToCity(city.name, city.cityId)"
+        >
+          <mt-cell :title="city.name"></mt-cell>
+        </div>
+      </mt-index-section>
+    </mt-index-list>
   </div>
 </template>
 
 <script>
-export default {};
-</script>
+// import axios from "axios";
+import { Indicator } from "mint-ui";
 
+export default {
+  data() {
+    return {
+      datalist: [],
+      hotList: [],
+    };
+  },
+
+  mounted() {
+    Indicator.open({
+      text: "Loading...",
+      spinnerType: "fading-circle",
+    });
+    // this.$refs.mylist.$el.style.height = document.documentElement.clientHeight - 350 + "px";
+    // console.log(this.$refs.mylist.$el.style.height);
+    this.axios({
+      url: "https://m.maizuo.com/gateway?k=9360655",
+      headers: {
+        "X-Client-Info":
+          '{"a":"3000","ch":"1002","v":"5.0.4","e":"1599886170284962490155009","bc":"210300"}',
+        "X-Host": "mall.film-ticket.city.list",
+      },
+    }).then((res) => {
+      this.datalist = this.handleList(res.data.data.cities);
+      this.$nextTick(() => {
+        Indicator.close();
+      });
+    });
+  },
+  methods: {
+    // handleClick(id) {
+    //   console.log(id);
+    //   localStorage.setItem("cityId", id);
+    //   this.$router.push("/cinema");
+    // },
+    handleToCity(name, id) {
+      console.log("hot");
+      this.$store.commit("city/CITY_INFO", {
+        name,
+        id,
+      });
+      window.localStorage.setItem("nowName", name);
+      window.localStorage.setItem("nowId", id);
+      this.$router.push("/movie/nowplaying");
+    },
+    handleList(list) {
+      let firstLetter = [];
+      let uniqueFirstLetter = [];
+      let temp = [];
+      let datalist = [];
+      firstLetter = list.map((item) => item.pinyin.substring(0, 1));
+      for (let i = 0; i < firstLetter.length; i++) {
+        if (uniqueFirstLetter.indexOf(firstLetter[i]) === -1) {
+          uniqueFirstLetter.push(firstLetter[i]);
+        }
+      }
+      uniqueFirstLetter = uniqueFirstLetter
+        .sort()
+        .map((item) => item.toUpperCase());
+      for (let i = 0; i < uniqueFirstLetter.length; i++) {
+        temp = list.filter(
+          (item) =>
+            item.pinyin.substring(0, 1).toUpperCase() === uniqueFirstLetter[i]
+        );
+        datalist.push({
+          index: uniqueFirstLetter[i],
+          list: [...temp],
+        });
+      }
+      this.hotList = list.filter((item) => item.isHot === 1);
+      console.log(datalist);
+      console.log(this.hotList);
+      return datalist;
+    },
+  },
+};
+</script>
 <style lang="scss" scoped>
-#content .city_body {
-  margin-top: 45px;
-  display: flex;
-  width: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-}
-.city_body .city_list {
-  flex: 1;
-  overflow: auto;
-  background: #fff5f0;
-}
-.city_body .city_list::-webkit-scrollbar {
-  background-color: transparent;
-  width: 0;
-}
-.city_body .city_hot {
+.city_hot {
   margin-top: 20px;
 }
-.city_body .city_hot h2 {
+.city_hot h2 {
+  margin-top: 40px;
   padding-left: 15px;
-  line-height: 30px;
-  font-size: 14px;
+  line-height: 35px;
+  font-size: 18px;
   background: #f0f0f0;
   font-weight: normal;
+  text-align: center;
 }
-.city_body .city_hot ul {
+.city_hot ul {
+  margin-top: 0;
+  margin-bottom: 10px;
 }
-.city_body .city_hot ul li {
+.city_hot ul li {
   float: left;
   background: #fff;
   width: 29%;
   height: 33px;
   margin-top: 15px;
+  margin-bottom: 10px;
   margin-left: 3%;
   padding: 0 4px;
   border: 1px solid #e6e6e6;
@@ -130,33 +137,5 @@ export default {};
   line-height: 33px;
   text-align: center;
   box-sizing: border-box;
-}
-.city_body .city_sort {
-}
-.city_body .city_sort div {
-  margin-top: 20px;
-}
-.city_body .city_sort h2 {
-  padding-left: 15px;
-  line-height: 30px;
-  font-size: 14px;
-  background: #f0f0f0;
-  font-weight: normal;
-}
-.city_body .city_sort ul {
-  padding-left: 10px;
-  margin-top: 10px;
-}
-.city_body .city_sort ul li {
-  line-height: 30px;
-  line-height: 30px;
-}
-.city_body .city_index {
-  width: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  border-left: 1px #e6e6e6 solid;
 }
 </style>
